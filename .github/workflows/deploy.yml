@@ -20,7 +20,20 @@ jobs:
           mkdir -p dist
           cp index.html _headers robots.txt dist/
 
+      - name: Check Cloudflare deployment credentials
+        id: credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deployment skipped. Add the CLOUDFLARE_API_TOKEN repository secret to enable it."
+          fi
+
       - name: Deploy to existing Cloudflare Pages URL
+        if: steps.credentials.outputs.available == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
