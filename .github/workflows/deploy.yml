@@ -1,0 +1,28 @@
+name: Deploy editorial concept
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          mkdir -p dist
+          cp index.html _headers robots.txt dist/
+
+      - name: Deploy to existing Cloudflare Pages URL
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 9fac750d1739cc06d79c6ed53b549d20
+          command: pages deploy dist --project-name=nia-thomas-editorial-concept --branch=demo/nia-thomas-editorial
